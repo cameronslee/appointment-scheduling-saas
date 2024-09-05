@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Appointment Scheduler</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			line-height: 1.6;
+			margin: 0;
+			padding: 20px;
+			background-color: #f4f4f4;
+		}
+
+		.container {
+			max-width: 800px;
+			margin: auto;
+			background: white;
+			padding: 20px;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+
+		h1 {
+			color: #333;
+		}
+
+		form {
+			margin-bottom: 20px;
+		}
+
+		input,
+		button {
+			display: block;
+			width: 100%;
+			padding: 10px;
+			margin-bottom: 10px;
+		}
+
+		button {
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #45a049;
+		}
+
+		#appointments {
+			list-style-type: none;
+			padding: 0;
+		}
+
+		#appointments li {
+			background-color: #f9f9f9;
+			margin-bottom: 10px;
+			padding: 10px;
+			border-radius: 3px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Appointment Scheduler</h1>
+
+		<h2>Register</h2>
+		<form id="registerForm">
+			<input type="text" id="regUsername" placeholder="Username" required>
+			<input type="email" id="regEmail" placeholder="Email" required>
+			<input type="password" id="regPassword" placeholder="Password" required>
+			<button type="submit">Register</button>
+		</form>
+
+		<h2>Login</h2>
+		<form id="loginForm">
+			<input type="text" id="loginUsername" placeholder="Username" required>
+			<input type="password" id="loginPassword" placeholder="Password" required>
+			<button type="submit">Login</button>
+		</form>
+
+		<h2>Create Appointment</h2>
+		<form id="appointmentForm">
+			<input type="number" id="providerId" placeholder="Provider ID" required>
+			<input type="datetime-local" id="startTime" required>
+			<input type="datetime-local" id="endTime" required>
+			<button type="submit">Create Appointment</button>
+		</form>
+
+		<h2>Your Appointments</h2>
+		<ul id="appointments"></ul>
+	</div>
+
+	<script>
+		// Register
+		document.getElementById('registerForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const response = await fetch('/register', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({
+					username: document.getElementById('regUsername').value,
+					email: document.getElementById('regEmail').value,
+					password: document.getElementById('regPassword').value
+				})
+			});
+			const data = await response.json();
+			alert(data.message);
+		});
+
+		// Login
+		document.getElementById('loginForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const response = await fetch('/login', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({
+					username: document.getElementById('loginUsername').value,
+					password: document.getElementById('loginPassword').value
+				})
+			});
+			const data = await response.json();
+			alert(data.message);
+			if (response.ok) {
+				fetchAppointments();
+			}
+		});
+
+		// Create Appointment
+		document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const response = await fetch('/appointments', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({
+					provider_id: document.getElementById('providerId').value,
+					start_time: document.getElementById('startTime').value,
+					end_time: document.getElementById('endTime').value
+				})
+			});
+			const data = await response.json();
+			alert(data.message);
+			if (response.ok) {
+				fetchAppointments();
+			}
+		});
+
+		// Fetch Appointments
+		async function fetchAppointments() {
+			const response = await fetch('/appointments');
+			const appointments = await response.json();
+			const appointmentsList = document.getElementById('appointments');
+			appointmentsList.innerHTML = '';
+			appointments.forEach(appointment => {
+				const li = document.createElement('li');
+				li.textContent = `Provider: ${appointment.provider_id}, Start: ${appointment.start_time}, End: ${appointment.end_time}`;
+				appointmentsList.appendChild(li);
+			});
+		}
+
+		// Initial fetch
+		fetchAppointments();
+	</script>
+</body>
+
+</html>
